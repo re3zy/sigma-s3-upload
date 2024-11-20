@@ -37,51 +37,66 @@ BUCKET_NAME=your-bucket-name       # Target S3 bucket for file uploads
 ## Step 3: Configure AWS S3
 
 1. **Create S3 Bucket**
-   - Navigate to S3 Dashboard
-   - Create bucket with unique name
-   - Set appropriate region
-   - Configure bucket policy for your use case
+   - Log into AWS Console and navigate to S3 service
+   - Click "Create bucket"
+   - Enter a unique bucket name
+   - Select your desired region
+   - For testing, keep default settings
+   - For production, review public access settings based on your security requirements
 
 2. **Configure CORS** (Required for browser uploads)
-```json
-[
-  {
-    "AllowedHeaders": ["*"],
-    "AllowedMethods": ["POST", "GET"],
-    "AllowedOrigins": ["*"],
-    "ExposeHeaders": []
-  }
-]
-```
+   - In your bucket's settings, find "Cross-origin resource sharing (CORS)"
+   - Click "Edit" and paste this configuration:
+   ```json
+   [
+     {
+       "AllowedHeaders": ["*"],
+       "AllowedMethods": ["POST", "GET"],
+       "AllowedOrigins": ["*"],
+       "ExposeHeaders": []
+     }
+   ]
+   ```
+   Note: For production, replace `"AllowedOrigins": ["*"]` with your specific domain(s)
 
 3. **IAM Setup**
-   - Create user with `AmazonS3FullAccess` or custom policy:
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Action": [
-           "s3:PutObject",
-           "s3:GetObject"
-         ],
-         "Resource": "arn:aws:s3:::your-bucket-name/*"
-       }
-     ]
-   }
-   ```
+   - Go to IAM service in AWS Console
+   - Click "Users" → "Add users"
+   - Create a new user with "Access key - Programmatic access"
+   - Either:
+     - Attach existing policy `AmazonS3FullAccess` (less secure, more convenient)
+     - OR create custom policy (recommended for production):
+     ```json
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Effect": "Allow",
+           "Action": [
+             "s3:PutObject",
+             "s3:GetObject"
+           ],
+           "Resource": "arn:aws:s3:::your-bucket-name/*"
+         }
+       ]
+     }
+     ```
+   - Save the Access Key ID and Secret Access Key for `.env` file
 
 ## Step 4: Installation & Setup
 
+Dependencies will be automatically installed based on package.json files.
+
 **Backend:**
 ```bash
-npm install
+cd backend
+npm install  # Installs: aws-sdk, cors, dotenv, express
 ```
 
 **Frontend:**
 ```bash
-npm install
+cd frontend
+npm install  # Installs: react, @sigmacomputing/plugin, and other dependencies
 ```
 
 ## Step 5: Launch Application
