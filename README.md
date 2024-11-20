@@ -1,46 +1,49 @@
-README: Deploying the S3 File Upload React App
-This README will guide you through setting up and deploying the React app and backend server for uploading files to an AWS S3 bucket. Follow these steps carefully to configure the environment and get the app running.
+# S3 File Upload React App with Pre-signed URLs
 
-Prerequisites
-Git: Ensure Git is installed to clone the repository.
-Node.js: Install Node.js (v14 or higher recommended) to run the backend and React frontend.
-AWS Account: An active AWS account to set up an S3 bucket and generate credentials.
-Basic Knowledge: Familiarity with terminal commands and a text editor.
-Step 1: Clone the Repository
-Open a terminal or command prompt.
-Clone the repository:
-bash
-Copy code
+This application enables secure file uploads to AWS S3 using pre-signed URLs from Sigma workbooks, implemented as a Sigma plugin. It provides a secure way to handle file uploads and downloads without exposing AWS credentials to end users, while tying unstructured data to structured data within the Sigma environment!
+
+## Key Features
+- Secure file uploads using pre-signed URLs
+- Temporary (configurable time horizon) download links for uploaded files
+- Integration with Sigma
+- Configurable server endpoint
+- Automatic file URL synchronization with Sigma variables
+
+## Prerequisites
+
+1. **Git**: Version control
+2. **Node.js**: v14 or higher
+3. **AWS Account**: With S3 permissions
+4. **Sigma Computing Account**: For plugin deployment
+
+## Step 1: Clone the Repository
+
+```bash
 git clone <REPO_URL>
 cd <REPO_DIRECTORY>
-Step 2: Set Up Environment Variables
-You need to create a .env file in the root directory of the backend (server.js) to securely store AWS credentials and S3 configurations.
+```
 
-Create a file named .env in the backend folder.
-Add the following variables to the .env file:
-makefile
-Copy code
-AWS_REGION=your-aws-region       # e.g., us-west-1
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
-BUCKET_NAME=your-bucket-name
-Replace your-aws-region, your-access-key-id, your-secret-access-key, and your-bucket-name with your actual AWS S3 details.
-Step 3: Set Up AWS S3
-Log in to the AWS Management Console:
+## Step 2: Set Up Environment Variables
 
-Navigate to the S3 Dashboard.
-Create a Bucket:
+Create a `.env` file in the backend folder:
 
-Click "Create bucket."
-Choose a unique bucket name (e.g., my-upload-bucket).
-Select the appropriate region (e.g., us-west-1).
-Enable or disable public access as needed for your use case.
-Configure CORS:
+```
+AWS_REGION=your-aws-region         # Region where your S3 bucket exists
+AWS_ACCESS_KEY_ID=your-key-id      # IAM user access key with S3 permissions
+AWS_SECRET_ACCESS_KEY=your-secret  # IAM user secret
+BUCKET_NAME=your-bucket-name       # Target S3 bucket for file uploads
+```
 
-Go to your S3 bucket settings > Permissions > CORS Configuration.
-Add the following CORS policy:
-json
-Copy code
+## Step 3: Configure AWS S3
+
+1. **Create S3 Bucket**
+   - Navigate to S3 Dashboard
+   - Create bucket with unique name
+   - Set appropriate region
+   - Configure bucket policy for your use case
+
+2. **Configure CORS** (Required for browser uploads)
+```json
 [
   {
     "AllowedHeaders": ["*"],
@@ -49,61 +52,77 @@ Copy code
     "ExposeHeaders": []
   }
 ]
-Set Permissions:
+```
 
-Ensure the IAM role/user used for the app has the AmazonS3FullAccess policy (or a custom policy with upload and download permissions for your bucket).
-Step 4: Install Dependencies
-Install Backend Dependencies: Navigate to the backend folder and run:
+3. **IAM Setup**
+   - Create user with `AmazonS3FullAccess` or custom policy:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "s3:PutObject",
+           "s3:GetObject"
+         ],
+         "Resource": "arn:aws:s3:::your-bucket-name/*"
+       }
+     ]
+   }
+   ```
 
-bash
-Copy code
+## Step 4: Installation & Setup
+
+**Backend:**
+```bash
 npm install
-Install Frontend Dependencies: Navigate to the frontend folder and run:
+```
 
-bash
-Copy code
+**Frontend:**
+```bash
 npm install
-Step 5: Run the Backend Server
-Navigate to the folder containing server.js.
-Start the backend server:
-bash
-Copy code
-node server.js
-Verify the server is running on http://localhost:5000.
-Step 6: Run the Frontend React App
-Navigate to the folder containing the React app (src folder where App.js resides).
-Start the React development server:
-bash
-Copy code
-npm start
-Open a browser and go to http://localhost:3000.
-Step 7: Test the App
-Click the "Upload File" button in the app.
-Select a file from your computer.
-Verify that the file uploads successfully and displays a temporary download URL.
-Confirm that the file appears in your S3 bucket.
-Common Issues and Troubleshooting
-Missing .env Variables:
+```
 
-Ensure all required variables are present in the .env file and correctly configured.
-Access Denied Errors:
+## Step 5: Launch Application
 
-Verify your S3 bucket permissions and ensure your IAM user has sufficient access.
-CORS Errors:
+**Backend Server:**
+```bash
+node server.js   # Runs on port 5000
+```
 
-Double-check the CORS configuration for your S3 bucket.
-Server Not Running:
+**Frontend Development:**
+```bash
+npm start       # Access via http://localhost:3000
+```
 
-Ensure server.js is running on http://localhost:5000.
-Project Structure
-Frontend:
+## Sigma Computing Integration
 
-App.js: Main React component rendering the UploadFile component.
-UploadFile.js: Core file upload logic and UI.
-UploadFile.css: Styling for the React app.
-Backend:
+1. Set the `serverUrl` config in the plugin settings
+2. Bind the `Upload-URL` variable to your desired worksheet cell
+3. Upload files to receive temporary download URLs
 
-server.js: Node.js server to handle S3 pre-signed URL requests.
-Environment Notes
-Do not commit your .env file or AWS credentials to the repository.
-Rotate AWS credentials regularly for security.
+## Security Notes
+
+- Pre-signed URLs expire after 60 seconds (upload) and 5 minutes (download)
+- Rotate AWS credentials regularly
+- Configure S3 bucket with appropriate access policies
+
+## Troubleshooting
+
+- **Upload Fails**: Check AWS credentials and bucket permissions
+- **CORS Errors**: Verify CORS configuration matches your domain
+- **Variable Not Updating**: Ensure Sigma variable binding is correct
+- **Server Connection**: Verify server URL in plugin config
+
+## Component Architecture
+
+**Backend (`server.js`)**:
+- Express server handling pre-signed URL generation
+- Separate endpoints for upload and download URLs
+- Environmental configuration for AWS services
+
+**Frontend (`UploadFile.js`)**:
+- React component with Sigma plugin integration
+- File upload handling with progress feedback
+- Automatic URL synchronization with Sigma variables
