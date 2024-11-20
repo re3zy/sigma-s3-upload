@@ -114,7 +114,7 @@ npm start       # Access via http://localhost:3000
 ## Sigma Computing Integration
 
 1. Set the `serverUrl` config in the plugin settings
-2. Bind the `Upload-URL` variable to your desired worksheet cell
+2. Bind the `Upload-URL` variable to your desired workbook control
 3. Upload files to receive temporary download URLs
 
 ## Security Notes
