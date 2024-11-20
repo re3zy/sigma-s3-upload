@@ -1,4 +1,4 @@
-# S3 File Upload React App with Pre-signed URLs
+# S3 File Upload Plugin with Pre-signed URLs
 
 This application enables secure file uploads to AWS S3 using pre-signed URLs from Sigma workbooks, implemented as a Sigma plugin. It provides a secure way to handle file uploads and downloads without exposing AWS credentials to end users, while tying unstructured data to structured data within the Sigma environment!
 
